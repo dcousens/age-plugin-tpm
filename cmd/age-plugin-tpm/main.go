@@ -24,6 +24,7 @@ type PluginOptions struct {
 	Generate   bool
 	Decrypt    bool
 	Encrypt    bool
+	Version    bool
 	OutputFile string
 	LogFile    string
 	PIN        bool
@@ -42,6 +43,7 @@ var example = `
   Hello World`
 
 var (
+	Version       string
 	swtpmPath     = "/var/tmp/age-plugin-tpm"
 	pluginOptions = PluginOptions{}
 	rootCmd       = &cobra.Command{
@@ -338,6 +340,12 @@ func RunPlugin(cmd *cobra.Command, args []string) error {
 	var tpm *plugin.TPMDevice
 	var tpmPath string
 	var err error
+
+	if pluginOptions.Version {
+		fmt.Println(Version)
+		return nil
+	}
+
 	if pluginOptions.SwTPM || os.Getenv("AGE_PLUGIN_TPM_SWTPM") != "" {
 		tpm, err = plugin.NewSwTPM(swtpmPath)
 	} else {
@@ -397,12 +405,14 @@ func pluginFlags(cmd *cobra.Command, opts *PluginOptions) {
 	flags.BoolVar(&pluginOptions.SwTPM, "swtpm", false, "Use a software TPM for key storage (Testing only and requires swtpm installed)")
 
 	// Hidden commands
+	flags.BoolVar(&pluginOptions.Version, "version", false, "Display version.")
 	flags.BoolVar(&pluginOptions.Decrypt, "decrypt", false, "wip")
 	flags.BoolVar(&pluginOptions.Encrypt, "encrypt", false, "wip")
 	flags.StringVar(&pluginOptions.AgePlugin, "age-plugin", "", "internal use")
 	flags.MarkHidden("decrypt")
 	flags.MarkHidden("encrypt")
 	flags.MarkHidden("age-plugin")
+	flags.MarkHidden("version")
 }
 
 func main() {
